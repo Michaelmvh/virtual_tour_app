@@ -41,3 +41,7 @@ app.*.map.json
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+#API Keys related
+android/app/src/main/AndroidManifest.xml
+ios/Runner/AppDelegate.swift
