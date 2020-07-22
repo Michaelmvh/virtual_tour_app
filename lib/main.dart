@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'mappage.dart';
 import 'homepage.dart';
 
 void main() {
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Virtual Tours',
       theme: ThemeData(
-        primaryColor: Colors.red[700],
+        primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: HomePage(),
