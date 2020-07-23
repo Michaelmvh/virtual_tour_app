@@ -31,21 +31,6 @@ class _FilterWidget extends State<FilterWidget> {
   String _currentSelected;
 
   @override
-  void initState() {
-    _dropDownMenuItems = getDropDownMenuItems();
-    _currentSelected = _dropDownMenuItems[0].value;
-    super.initState();
-  }
-
-  List<DropdownMenuItem<String>> getDropDownMenuItems() {
-    List<DropdownMenuItem<String>> items = new List();
-    for (String campus in _campuses) {
-      items.add(new DropdownMenuItem(value: campus, child: new Text(campus)));
-    }
-    return items;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return new Container(
       color: Colors.white,
@@ -63,14 +48,6 @@ class _FilterWidget extends State<FilterWidget> {
           //items: _dropDownMenuItems,
           //
           //),
-          new MaterialButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MapPage()),
-                );
-              },
-              child: Text("Tour University")),
         ],
       )),
     );

@@ -5,6 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'filterpage.dart';
 
 class MapPage extends StatefulWidget {
+  MapPage(String currentSelected);
+
   @override
   MapPageState createState() => MapPageState();
 }
@@ -39,6 +41,7 @@ class MapPageState extends State<MapPage> {
         ],
       ),
       body: Stack(
+        //This could be changed to a different widget type
         children: <Widget>[
           _buildGoogleMap(context),
           _zoomminusfunction(),
@@ -77,14 +80,14 @@ class MapPageState extends State<MapPage> {
     return Align(
       alignment: Alignment.bottomLeft,
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 20.0),
-        height: 150.0,
+        //margin: EdgeInsets.symmetric(vertical: 10.0),
+        height: 100,
         child: ListView(
           scrollDirection: Axis.vertical,
           children: <Widget>[
-            SizedBox(width: 10.0),
+            //SizedBox(width: 10.0),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(0),
               child: _boxes(
                   "https://lh5.googleusercontent.com/p/AF1QipO3VPL9m-b355xWeg4MXmOQTauFAEkavSluTtJU=w225-h160-k-no",
                   40.738380,
@@ -125,7 +128,7 @@ class MapPageState extends State<MapPage> {
           child: Material(
               color: Colors.white,
               elevation: 14.0,
-              borderRadius: BorderRadius.circular(24.0),
+              //borderRadius: BorderRadius.circular(24.0),
               shadowColor: Color(0x802196F3),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,7 +277,7 @@ class MapPageState extends State<MapPage> {
     controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
       target: LatLng(lat, long),
       zoom: 15,
-      tilt: 50.0,
+      //tilt: 50.0,
       bearing: 45.0,
     )));
   }

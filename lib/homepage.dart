@@ -67,7 +67,8 @@ class _SettingsWidgetState extends State<SettingsWidget> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MapPage()),
+                  MaterialPageRoute(
+                      builder: (context) => MapPage(_currentSelected)),
                 );
               },
               child: Text("Tour University")),
