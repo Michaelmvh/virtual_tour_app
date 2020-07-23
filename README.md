@@ -1,6 +1,17 @@
 # virtual_tour_app
 
-A new Flutter project.
+Description
+
+## Quick Overview
+
+## Purpose
+
+## Detailed Overview
+
+## Run it for yourself
+
+- API for Android and iOS --> hyperlink to respective articles
+- Firebase 
 
 ## Getting Started
 
