@@ -45,3 +45,7 @@ app.*.map.json
 #API Keys related
 android/app/src/main/AndroidManifest.xml
 ios/Runner/AppDelegate.swift
+
+#Hide Database Files
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
