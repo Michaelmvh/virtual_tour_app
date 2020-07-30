@@ -2,11 +2,9 @@
 
 Description
 
-## Quick Overview
+## Overview
 
 ## Purpose
-
-## Detailed Overview
 
 ## Run it for yourself
 
