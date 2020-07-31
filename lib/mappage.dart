@@ -259,13 +259,15 @@ class MapPageState extends State<MapPage> {
       child: GoogleMap(
         zoomGesturesEnabled: true,
         mapType: MapType.normal,
-        initialCameraPosition:
-            CameraPosition(target: LatLng(43.072900, -89.403829), zoom: 14),
+        initialCameraPosition: CameraPosition(
+            target: LatLng(43.072900, -89.403829),
+            zoom: 14), //change for firestore values
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
         markers: {
           leopoldResidenceHallMarker,
+          //buildMapMarkers().,
           //Add markers from Google Cloud Here
         },
       ),
@@ -292,3 +294,5 @@ Marker leopoldResidenceHallMarker = Marker(
     BitmapDescriptor.hueRed,
   ),
 );
+
+Set<Marker> buildMapMarkers() {}

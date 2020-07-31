@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'mappage.dart';
 
 class HomePage extends StatelessWidget {
@@ -8,41 +9,24 @@ class HomePage extends StatelessWidget {
         appBar: new AppBar(
           title: new Text("Virtual Tours"),
         ),
-        body: new SettingsWidget());
+        body: new HomePageWidget());
   }
 }
 
-class SettingsWidget extends StatefulWidget {
-  SettingsWidget({Key key}) : super(key: key);
+class HomePageWidget extends StatefulWidget {
+  HomePageWidget({Key key}) : super(key: key);
 
   @override
-  _SettingsWidgetState createState() => new _SettingsWidgetState();
+  _HomePageWidgetState createState() => new _HomePageWidgetState();
 }
 
-class _SettingsWidgetState extends State<SettingsWidget> {
-  List _campuses = [
-    "University of Wisconsin - Madison",
-    "Ohio State University",
-    "Purdue",
-    "More Coming Soon"
-  ]; //Change this to use Firebase eventually
-
-  List<DropdownMenuItem<String>> _dropDownMenuItems;
-  String _currentSelected;
+class _HomePageWidgetState extends State<HomePageWidget> {
+  //List<DropdownMenuItem<String>> _dropDownMenuItems;
+  String currentCampus;
 
   @override
   void initState() {
-    _dropDownMenuItems = getDropDownMenuItems();
-    _currentSelected = _dropDownMenuItems[0].value;
     super.initState();
-  }
-
-  List<DropdownMenuItem<String>> getDropDownMenuItems() {
-    List<DropdownMenuItem<String>> items = new List();
-    for (String campus in _campuses) {
-      items.add(new DropdownMenuItem(value: campus, child: new Text(campus)));
-    }
-    return items;
   }
 
   @override
@@ -58,28 +42,46 @@ class _SettingsWidgetState extends State<SettingsWidget> {
           new Container(
             padding: new EdgeInsets.all(10.0),
           ),
-          new DropdownButton(
-            value: _currentSelected,
-            items: _dropDownMenuItems,
-            onChanged: changedDropDownItem,
+          new StreamBuilder(
+            stream: Firestore.instance.collection('Schools').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Text('Loading');
+              List<DropdownMenuItem<String>> campusList = [];
+              for (int i = 0; i < snapshot.data.documents.length; i++) {
+                DocumentSnapshot snap = snapshot.data.documents[i];
+                campusList.add(new DropdownMenuItem(
+                    value: snap.documentID,
+                    child: new Text(snap.data['SchoolName'])));
+              }
+              //String currentCampus = campusList[0].value;
+              return DropdownButton<String>(
+                  value: currentCampus, //campusList[0].value,
+                  items: campusList,
+                  //getDropDownMenuItems(
+                  //context, snapshot.data.documents['Schools']),
+                  onChanged: (String newCampus) {
+                    setState(() {
+                      currentCampus = newCampus;
+                    });
+                  });
+            },
           ),
+          //DropdownButton(
+          //value: "Select University",
+          //items: _dropDownMenuItems,
+          //onChanged: changedDropDownItem,
+          //),
           new MaterialButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MapPage(_currentSelected)),
+                      builder: (context) => MapPage(currentCampus)),
                 );
               },
-              child: Text("Tour University")),
+              child: Text("Tour Campus")),
         ],
       )),
     );
-  }
-
-  void changedDropDownItem(String selected) {
-    setState(() {
-      _currentSelected = selected;
-    });
   }
 }
