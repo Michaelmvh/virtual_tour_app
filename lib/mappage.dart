@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'filterpage.dart';
-import 'infoPage.dart';
+//import 'infoPage.dart';
+//import 'infoPill.dart';
 
 class MapPage extends StatelessWidget {
   final String campusName;
@@ -15,6 +15,8 @@ class MapPage extends StatelessWidget {
   double zoomVal = 5.0;
   @override
   Widget build(BuildContext context) {
+    List<String> selectedSiteTypes = [];
+    List<Marker> locationsList = [];
     return StreamBuilder(
         stream: Firestore.instance
             .collection('Schools')
@@ -23,7 +25,14 @@ class MapPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Text('Loading');
           DocumentSnapshot query = snapshot.data.documents[0];
+
           return Scaffold(
+            floatingActionButton: FloatingActionButton(
+              child: Icon(Icons.list),
+              onPressed: () {
+                print("showlist");
+              },
+            ),
             appBar: AppBar(
               leading: BackButton(onPressed: () {
                 Navigator.pop(context);
@@ -33,10 +42,35 @@ class MapPage extends StatelessWidget {
                 IconButton(
                   icon: Icon(FontAwesomeIcons.filter),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => FilterPage()),
-                    );
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return new AlertDialog(
+                            title: new Text('Select Filters'),
+                            content: Wrap(
+                                children:
+                                    _filterOptions(query, selectedSiteTypes)),
+                            actions: <Widget>[
+                              new FlatButton(
+                                child: Text("Cancel"),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // dismiss dialog
+                                },
+                              ),
+                              new FlatButton(
+                                child: Text("Continue"),
+                                onPressed: () {
+                                  //apply filters
+                                },
+                              )
+                            ],
+                          );
+                        });
+
+                    //Navigator.push(
+                    // context,
+                    // MaterialPageRoute(builder: (context) => FilterPage()),
+                    //);
                   },
                 )
               ],
@@ -44,9 +78,10 @@ class MapPage extends StatelessWidget {
             body: Stack(
               //This could be changed to a different widget type
               children: <Widget>[
-                _buildGoogleMap(context, query),
+                _buildGoogleMap(context, query, locationsList),
                 _zoomminusfunction(),
                 _zoomplusfunction(),
+                //infopill(),
                 //_buildPlacesContainer(),
               ],
             ),
@@ -78,199 +113,20 @@ class MapPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPlacesContainer() {
-    return Align(
-      alignment: Alignment.bottomLeft,
-      child: Container(
-        //margin: EdgeInsets.symmetric(vertical: 10.0),
-        height: 100,
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          children: <Widget>[
-            //SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(0),
-              child: _boxes(
-                  "https://lh5.googleusercontent.com/p/AF1QipO3VPL9m-b355xWeg4MXmOQTauFAEkavSluTtJU=w225-h160-k-no",
-                  40.738380,
-                  -73.988426,
-                  "Gramercy Tavern"),
-            ),
-            SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _boxes(
-                  "https://lh5.googleusercontent.com/p/AF1QipMKRN-1zTYMUVPrH-CcKzfTo6Nai7wdL7D8PMkt=w340-h160-k-no",
-                  40.761421,
-                  -73.981667,
-                  "Le Bernardin"),
-            ),
-            SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _boxes(
-                  "https://images.unsplash.com/photo-1504940892017-d23b9053d5d4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60",
-                  40.732128,
-                  -73.999619,
-                  "Blue Hill"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _boxes(String _image, double lat, double long, String restaurantName) {
-    return GestureDetector(
-      onTap: () {
-        _gotoLocation(lat, long);
-      },
-      child: Container(
-        child: new FittedBox(
-          child: Material(
-              color: Colors.white,
-              elevation: 14.0,
-              //borderRadius: BorderRadius.circular(24.0),
-              shadowColor: Color(0x802196F3),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    width: 180,
-                    height: 200,
-                    child: ClipRRect(
-                      borderRadius: new BorderRadius.circular(24.0),
-                      child: Image(
-                        fit: BoxFit.fill,
-                        image: NetworkImage(_image),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: myDetailsContainer1(restaurantName),
-                    ),
-                  ),
-                ],
-              )),
-        ),
-      ),
-    );
-  }
-
-  Widget myDetailsContainer1(String restaurantName) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Container(
-              child: Text(
-            restaurantName,
-            style: TextStyle(
-                color: Color(0xff6200ee),
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold),
-          )),
-        ),
-        SizedBox(height: 3.0),
-        Container(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Container(
-                child: Text(
-              "4.1",
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 18.0,
-              ),
-            )),
-            Container(
-              child: Icon(
-                FontAwesomeIcons.solidStar,
-                color: Colors.amber,
-                size: 15.0,
-              ),
-            ),
-            Container(
-              child: Icon(
-                FontAwesomeIcons.solidStar,
-                color: Colors.amber,
-                size: 15.0,
-              ),
-            ),
-            Container(
-              child: Icon(
-                FontAwesomeIcons.solidStar,
-                color: Colors.amber,
-                size: 15.0,
-              ),
-            ),
-            Container(
-              child: Icon(
-                FontAwesomeIcons.solidStar,
-                color: Colors.amber,
-                size: 15.0,
-              ),
-            ),
-            Container(
-              child: Icon(
-                FontAwesomeIcons.solidStarHalf,
-                color: Colors.amber,
-                size: 15.0,
-              ),
-            ),
-            Container(
-                child: Text(
-              "(946)",
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 18.0,
-              ),
-            )),
-          ],
-        )),
-        SizedBox(height: 5.0),
-        Container(
-            child: Text(
-          "American \u00B7 \u0024\u0024 \u00B7 1.6 mi",
-          style: TextStyle(
-            color: Colors.black54,
-            fontSize: 18.0,
-          ),
-        )),
-        SizedBox(height: 5.0),
-        Container(
-            child: Text(
-          "Closed \u00B7 Opens 17:00 Thu",
-          style: TextStyle(
-              color: Colors.black54,
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold),
-        )),
-      ],
-    );
-  }
-
-  Widget _buildGoogleMap(BuildContext context, DocumentSnapshot query) {
+  Widget _buildGoogleMap(BuildContext context, DocumentSnapshot query,
+      List<Marker> locationsList) {
     GeoPoint campusLoc = query.data['Location'];
     double campusZoom = query.data['Zoom'].toDouble();
-    //print(buildMapMarkers(query));
+    String docName = 'Schools/' + query.documentID + '/Sites/';
     return StreamBuilder(
-      stream: Firestore.instance
-          .collection('Schools/' + query.documentID + '/Sites/')
-          .snapshots(),
+      stream: Firestore.instance.collection(docName).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Text('Loading');
-        var locationsList = [];
         for (int i = 0; i < snapshot.data.documents.length; i++) {
           DocumentSnapshot snap = snapshot.data.documents[i];
           locationsList.add(markerHelper(snap.data['siteName'],
               snap.data['shortName'], snap.data['location']));
         }
-        print('Schools/' + query.documentID + '/Sites/');
         return Container(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
@@ -284,9 +140,7 @@ class MapPage extends StatelessWidget {
               _controller.complete(controller);
             },
             myLocationButtonEnabled: false,
-            markers: Set.from(locationsList)
-            //Add markers from Google Cloud Here
-            ,
+            markers: Set.from(locationsList),
           ),
         );
       },
@@ -294,12 +148,13 @@ class MapPage extends StatelessWidget {
   }
 
   Future<void> _gotoLocation(double lat, double long) async {
+    //potentially delete later or repurpose
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
       target: LatLng(lat, long),
-      zoom: 15,
+      //zoom: 15,
       //tilt: 50.0,
-      bearing: 45.0,
+      //bearing: 45.0,
     )));
   }
 }
@@ -310,10 +165,37 @@ Marker markerHelper(
   GeoPoint loc,
 ) {
   return Marker(
-      markerId: MarkerId(shortName),
-      position: LatLng(loc.latitude, loc.longitude),
-      infoWindow: InfoWindow(title: longName),
-      icon: BitmapDescriptor.defaultMarkerWithHue(
-        BitmapDescriptor.hueRed,
-      ));
+    markerId: MarkerId(shortName),
+    position: LatLng(loc.latitude, loc.longitude),
+    infoWindow: InfoWindow(title: longName),
+    icon: BitmapDescriptor.defaultMarkerWithHue(
+      BitmapDescriptor.hueRed,
+    ),
+    //onTap: (){
+
+    //}
+  );
+}
+
+List<Widget> _filterOptions(
+    DocumentSnapshot query, List<String> selectedSiteTypes) {
+  List<ChoiceChip> filterList = [];
+  List<String> list = [];
+  list = List.from(query.data['buildingTypes']);
+  //List<String> selectedSiteTypes = [];
+//fix this for the filter list and compartmentalize into own method or widget somehow
+  for (String siteType in list) {
+    filterList.add(new ChoiceChip(
+      label: Text(siteType),
+      selected: selectedSiteTypes.contains(siteType),
+      onSelected: (bool selected) {
+        // setState(() {
+        selectedSiteTypes.contains(siteType)
+            ? selectedSiteTypes.remove(siteType)
+            : selectedSiteTypes.add(siteType);
+        // });
+      },
+    ));
+  }
+  return filterList;
 }
