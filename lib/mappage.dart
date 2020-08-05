@@ -1,55 +1,56 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'filterpage.dart';
 
-class MapPage extends StatefulWidget {
-  MapPage(String currentSelected);
+class MapPage extends StatelessWidget {
+  final String campusName;
+  MapPage({Key key, @required this.campusName}) : super(key: key);
 
-  @override
-  MapPageState createState() => MapPageState();
-}
-
-class MapPageState extends State<MapPage> {
   Completer<GoogleMapController> _controller = Completer();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   double zoomVal = 5.0;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: () {
-          Navigator.pop(context);
-        }),
-        title: Text("UW - Madison"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(FontAwesomeIcons.filter),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => FilterPage()),
-              );
-            },
-          )
-        ],
-      ),
-      body: Stack(
-        //This could be changed to a different widget type
-        children: <Widget>[
-          _buildGoogleMap(context),
-          _zoomminusfunction(),
-          _zoomplusfunction(),
-          _buildPlacesContainer(),
-        ],
-      ),
-    );
+    return StreamBuilder(
+        stream: Firestore.instance
+            .collection('Schools')
+            .where('SchoolName', isEqualTo: campusName)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Text('Loading');
+          DocumentSnapshot query = snapshot.data.documents[0];
+          return Scaffold(
+            appBar: AppBar(
+              leading: BackButton(onPressed: () {
+                Navigator.pop(context);
+              }),
+              title: Text(query.data['shortName']),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.filter),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FilterPage()),
+                    );
+                  },
+                )
+              ],
+            ),
+            body: Stack(
+              //This could be changed to a different widget type
+              children: <Widget>[
+                _buildGoogleMap(context, query),
+                _zoomminusfunction(),
+                _zoomplusfunction(),
+                //_buildPlacesContainer(),
+              ],
+            ),
+          );
+        });
   }
 
   Widget _zoomminusfunction() {
@@ -252,7 +253,7 @@ class MapPageState extends State<MapPage> {
     );
   }
 
-  Widget _buildGoogleMap(BuildContext context) {
+  Widget _buildGoogleMap(BuildContext context, DocumentSnapshot query) {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -265,11 +266,10 @@ class MapPageState extends State<MapPage> {
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
-        markers: {
-          leopoldResidenceHallMarker,
-          //buildMapMarkers().,
-          //Add markers from Google Cloud Here
-        },
+        myLocationButtonEnabled: false,
+        markers: Set.from(buildMapMarkers(query))
+        //Add markers from Google Cloud Here
+        ,
       ),
     );
   }
@@ -295,4 +295,8 @@ Marker leopoldResidenceHallMarker = Marker(
   ),
 );
 
-Set<Marker> buildMapMarkers() {}
+List<Marker> buildMapMarkers(DocumentSnapshot query) {
+  List<Marker> mapLocations = [];
+
+  return mapLocations;
+}

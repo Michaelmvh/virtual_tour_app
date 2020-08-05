@@ -21,7 +21,6 @@ class HomePageWidget extends StatefulWidget {
 }
 
 class _HomePageWidgetState extends State<HomePageWidget> {
-  //List<DropdownMenuItem<String>> _dropDownMenuItems;
   String currentCampus;
 
   @override
@@ -53,12 +52,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     value: snap.documentID,
                     child: new Text(snap.data['SchoolName'])));
               }
-              //String currentCampus = campusList[0].value;
               return DropdownButton<String>(
-                  value: currentCampus, //campusList[0].value,
+                  value: currentCampus,
                   items: campusList,
-                  //getDropDownMenuItems(
-                  //context, snapshot.data.documents['Schools']),
                   onChanged: (String newCampus) {
                     setState(() {
                       currentCampus = newCampus;
@@ -66,17 +62,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   });
             },
           ),
-          //DropdownButton(
-          //value: "Select University",
-          //items: _dropDownMenuItems,
-          //onChanged: changedDropDownItem,
-          //),
           new MaterialButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => MapPage(currentCampus)),
+                      builder: (context) => MapPage(
+                            campusName: currentCampus,
+                          )),
                 );
               },
               child: Text("Tour Campus")),
