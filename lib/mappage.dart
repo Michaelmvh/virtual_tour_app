@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'filterpage.dart';
+import 'infoPage.dart';
 
 class MapPage extends StatelessWidget {
   final String campusName;
@@ -256,23 +257,39 @@ class MapPage extends StatelessWidget {
   Widget _buildGoogleMap(BuildContext context, DocumentSnapshot query) {
     GeoPoint campusLoc = query.data['Location'];
     double campusZoom = query.data['Zoom'].toDouble();
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child: GoogleMap(
-        zoomGesturesEnabled: true,
-        mapType: MapType.normal,
-        initialCameraPosition: CameraPosition(
-            target: LatLng(campusLoc.latitude, campusLoc.longitude),
-            zoom: campusZoom),
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-        myLocationButtonEnabled: false,
-        markers: Set.from(buildMapMarkers(query))
-        //Add markers from Google Cloud Here
-        ,
-      ),
+    //print(buildMapMarkers(query));
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('Schools/' + query.documentID + '/Sites/')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Text('Loading');
+        var locationsList = [];
+        for (int i = 0; i < snapshot.data.documents.length; i++) {
+          DocumentSnapshot snap = snapshot.data.documents[i];
+          locationsList.add(markerHelper(snap.data['siteName'],
+              snap.data['shortName'], snap.data['location']));
+        }
+        print('Schools/' + query.documentID + '/Sites/');
+        return Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: GoogleMap(
+            zoomGesturesEnabled: true,
+            mapType: MapType.normal,
+            initialCameraPosition: CameraPosition(
+                target: LatLng(campusLoc.latitude, campusLoc.longitude),
+                zoom: campusZoom),
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+            myLocationButtonEnabled: false,
+            markers: Set.from(locationsList)
+            //Add markers from Google Cloud Here
+            ,
+          ),
+        );
+      },
     );
   }
 
@@ -287,18 +304,16 @@ class MapPage extends StatelessWidget {
   }
 }
 
-//Add markers from Google Cloud
-Marker leopoldResidenceHallMarker = Marker(
-  markerId: MarkerId('Leopold'),
-  position: LatLng(43.077681, -89.414056),
-  infoWindow: InfoWindow(title: 'Leopold Residence Hall'),
-  icon: BitmapDescriptor.defaultMarkerWithHue(
-    BitmapDescriptor.hueRed,
-  ),
-);
-
-List<Marker> buildMapMarkers(DocumentSnapshot query) {
-  List<Marker> mapLocations = [];
-  //query.data['Sites'];
-  return mapLocations;
+Marker markerHelper(
+  String longName,
+  String shortName,
+  GeoPoint loc,
+) {
+  return Marker(
+      markerId: MarkerId(shortName),
+      position: LatLng(loc.latitude, loc.longitude),
+      infoWindow: InfoWindow(title: longName),
+      icon: BitmapDescriptor.defaultMarkerWithHue(
+        BitmapDescriptor.hueRed,
+      ));
 }
