@@ -27,7 +27,7 @@ class MapPage extends StatelessWidget {
               leading: BackButton(onPressed: () {
                 Navigator.pop(context);
               }),
-              title: Text(query.data['shortName']),
+              title: Text(query.data['ShortName']),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(FontAwesomeIcons.filter),
@@ -254,6 +254,8 @@ class MapPage extends StatelessWidget {
   }
 
   Widget _buildGoogleMap(BuildContext context, DocumentSnapshot query) {
+    GeoPoint campusLoc = query.data['Location'];
+    double campusZoom = query.data['Zoom'].toDouble();
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -261,8 +263,8 @@ class MapPage extends StatelessWidget {
         zoomGesturesEnabled: true,
         mapType: MapType.normal,
         initialCameraPosition: CameraPosition(
-            target: LatLng(43.072900, -89.403829),
-            zoom: 14), //change for firestore values
+            target: LatLng(campusLoc.latitude, campusLoc.longitude),
+            zoom: campusZoom),
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
@@ -297,6 +299,6 @@ Marker leopoldResidenceHallMarker = Marker(
 
 List<Marker> buildMapMarkers(DocumentSnapshot query) {
   List<Marker> mapLocations = [];
-
+  //query.data['Sites'];
   return mapLocations;
 }
