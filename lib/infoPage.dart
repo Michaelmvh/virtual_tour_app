@@ -143,7 +143,6 @@ class InfoPage extends StatelessWidget {
         ),
       );
     }).toList();
-    print(detailList);
     return Column(
       children: <Widget>[
         Padding(
