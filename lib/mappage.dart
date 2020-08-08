@@ -16,9 +16,7 @@ class MapPageState extends State<MapPage> {
   String campusName;
   MapPageState(this.campusName);
   Completer<GoogleMapController> _controller = Completer();
-  Visibility mapWindow = Visibility(
-    child: Text(''),
-  );
+  Widget mapWindow = Text('');
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +114,7 @@ class MapPageState extends State<MapPage> {
             markers: Set.from(locationsList),
             onTap: (argument) {
               setState(() {
-                mapWindow = Visibility(visible: false, child: Text(''));
+                mapWindow = Text('');
               });
             },
           ),
@@ -149,7 +147,7 @@ class MapPageState extends State<MapPage> {
       ),
       onTap: () {
         setState(() {
-          mapWindow = _mapPopUp(true, longName);
+          mapWindow = _mapPopUp(longName);
         });
       },
     );
@@ -209,49 +207,57 @@ class MapPageState extends State<MapPage> {
     return filterList;
   }
 
-  Widget _mapPopUp(bool vis, String siteName) {
-    if (!vis) return Visibility(child: Scaffold());
-    //Update this here
-    return Visibility(
-        visible: true,
-        child: Container(
-            constraints: BoxConstraints(
-              maxHeight: 50,
-            ),
-            color: Colors.white,
-            child: Row(
-              children: <Widget>[
-                //Image.network(''),
-                Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(left: 0.0),
-                      child: Text(
-                        '$siteName', //Shortname -- Larger Text
+  Widget _mapPopUp(String siteName) {
+    return StreamBuilder(
+        stream: Firestore.instance
+            .collection("/Schools/$campusName/Sites")
+            .where('siteName', isEqualTo: siteName)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Text('Loading');
+          DocumentSnapshot query = snapshot.data.documents[0];
+          String community = query.data['community'];
+          return Container(
+              constraints: BoxConstraints(
+                maxHeight: 50,
+              ),
+              color: Colors.white,
+              child: Row(
+                children: <Widget>[
+                  ClipOval(),
+                  Image.network(query.data['ImageURL']),
+                  Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(left: 0.0),
+                        child: Text(
+                          '$siteName', //Shortname -- Larger Text
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 0.0),
-                      child: Text(
-                        '', //Type -- Smaller Text
+                      Padding(
+                        padding: EdgeInsets.only(left: 0.0),
+                        child: Text(
+                          '$community', //Type -- Smaller Text
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => InfoPage(
-                                campusName: campusName,
-                                siteName: siteName,
-                              )),
-                    );
-                  },
-                ),
-              ],
-            )));
+                    ],
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    color: Colors.blue,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => InfoPage(
+                                  campusName: campusName,
+                                  siteName: siteName,
+                                )),
+                      );
+                    },
+                  ),
+                ],
+              ));
+        });
   }
 } //class
