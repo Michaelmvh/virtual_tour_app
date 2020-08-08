@@ -5,14 +5,16 @@ import 'DescriptionTextWidget.dart';
 
 class InfoPage extends StatelessWidget {
   final String campusName;
-  InfoPage({Key key, @required this.campusName}) : super(key: key);
+  final String siteName;
+  InfoPage({Key key, @required this.campusName, @required this.siteName})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
         stream: Firestore.instance
-            .collection("/Schools/University of Wisconsin - Madison/Sites")
-            .where('shortName', isEqualTo: 'Leopold')
+            .collection("/Schools/$campusName/Sites")
+            .where('siteName', isEqualTo: siteName)
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Text('Loading');
@@ -61,7 +63,7 @@ class InfoPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(left: 3.0),
+          padding: EdgeInsets.only(left: 5.0),
           child: Text(
             'View Rooms',
             style: TextStyle(
@@ -87,14 +89,15 @@ class InfoPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(left: 3.0),
+          padding: EdgeInsets.only(left: 5.0),
           child: Text(heading,
               style: TextStyle(
                 fontSize: 25,
+                fontWeight: FontWeight.bold,
               )),
         ),
         Padding(
-          padding: EdgeInsets.only(left: 3.0),
+          padding: EdgeInsets.only(left: 5.0),
           child: Text(
             subheading,
             style: TextStyle(
@@ -111,7 +114,7 @@ class InfoPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(left: 3.0),
+          padding: EdgeInsets.only(left: 5.0),
           child: Text(
             'About',
             style: TextStyle(
@@ -131,9 +134,9 @@ class InfoPage extends StatelessWidget {
       var key = entry.key;
       var value = entry.value;
       return Padding(
-        padding: EdgeInsets.only(left: 3.0),
+        padding: EdgeInsets.only(left: 10.0),
         child: Text(
-          '$key - $value',
+          '• $key - $value',
           //style: TextStyle(
           // fontSize: 20,
           //),
@@ -144,7 +147,7 @@ class InfoPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(left: 3.0),
+          padding: EdgeInsets.only(left: 5.0),
           child: Text(
             'Details',
             style: TextStyle(
