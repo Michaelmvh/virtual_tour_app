@@ -16,12 +16,16 @@ class MapPageState extends State<MapPage> {
   String campusName;
   MapPageState(this.campusName);
   Completer<GoogleMapController> _controller = Completer();
-  Widget mapWindow = Text('');
+  Widget mapWindow = Container();
+  double screenWidth;
+  List<Widget> testing = [];
 
   @override
   Widget build(BuildContext context) {
     List<String> selectedSiteTypes = [];
     List<Marker> locationsList = [];
+    bool listViewShown = false;
+    screenWidth = MediaQuery.of(context).size.width;
     return StreamBuilder(
         stream: Firestore.instance
             .collection('Schools')
@@ -30,12 +34,20 @@ class MapPageState extends State<MapPage> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Text('Loading');
           DocumentSnapshot query = snapshot.data.documents[0];
-
+          selectedSiteTypes = List.from(query.data['buildingTypes']);
           return Scaffold(
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.list),
               onPressed: () {
                 print("showlist");
+                setState(() {
+                  if (!listViewShown) {
+                    _showSiteList();
+                  } else {
+                    mapWindow = Container();
+                  }
+                  listViewShown = !listViewShown;
+                });
               },
             ),
             appBar: AppBar(
@@ -48,7 +60,6 @@ class MapPageState extends State<MapPage> {
               ],
             ),
             body: Stack(
-              //This could be changed to a different widget type
               children: <Widget>[
                 _buildGoogleMap(context, query, locationsList),
                 mapWindow,
@@ -114,7 +125,7 @@ class MapPageState extends State<MapPage> {
             markers: Set.from(locationsList),
             onTap: (argument) {
               setState(() {
-                mapWindow = Text('');
+                mapWindow = Container();
               });
             },
           ),
@@ -168,13 +179,15 @@ class MapPageState extends State<MapPage> {
                   new FlatButton(
                     child: Text("Cancel"),
                     onPressed: () {
-                      Navigator.of(context).pop(); // dismiss dialog
+                      Navigator.of(context).pop();
                     },
                   ),
                   new FlatButton(
                     child: Text("Continue"),
                     onPressed: () {
-                      //apply filters --> SetState!!!! shown
+                      setState(() {
+                        //apply filters
+                      });
                     },
                   )
                 ],
@@ -189,18 +202,16 @@ class MapPageState extends State<MapPage> {
     List<ChoiceChip> filterList = [];
     List<String> list = [];
     list = List.from(query.data['buildingTypes']);
-    //List<String> selectedSiteTypes = [];
-//fix this for the filter list and compartmentalize into own method or widget somehow
     for (String siteType in list) {
       filterList.add(new ChoiceChip(
         label: Text(siteType),
         selected: selectedSiteTypes.contains(siteType),
         onSelected: (bool selected) {
-          // setState(() {
-          selectedSiteTypes.contains(siteType)
-              ? selectedSiteTypes.remove(siteType)
-              : selectedSiteTypes.add(siteType);
-          // });
+          setState(() {
+            selectedSiteTypes.contains(siteType)
+                ? selectedSiteTypes.remove(siteType)
+                : selectedSiteTypes.add(siteType);
+          });
         },
       ));
     }
@@ -208,6 +219,8 @@ class MapPageState extends State<MapPage> {
   }
 
   Widget _mapPopUp(String siteName) {
+    //Inspiration from: Roman Jaquez
+    //Source: https://medium.com/flutter-community/add-a-custom-info-window-to-your-google-map-pins-in-flutter-2e96fdca211a
     return StreamBuilder(
         stream: Firestore.instance
             .collection("/Schools/$campusName/Sites")
@@ -217,47 +230,92 @@ class MapPageState extends State<MapPage> {
           if (!snapshot.hasData) return const Text('Loading');
           DocumentSnapshot query = snapshot.data.documents[0];
           String community = query.data['community'];
-          return Container(
-              constraints: BoxConstraints(
-                maxHeight: 50,
-              ),
-              color: Colors.white,
-              child: Row(
-                children: <Widget>[
-                  ClipOval(),
-                  Image.network(query.data['ImageURL']),
-                  Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(left: 0.0),
-                        child: Text(
-                          '$siteName', //Shortname -- Larger Text
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 0.0),
-                        child: Text(
-                          '$community', //Type -- Smaller Text
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward),
-                    color: Colors.blue,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => InfoPage(
-                                  campusName: campusName,
-                                  siteName: siteName,
-                                )),
-                      );
-                    },
-                  ),
-                ],
-              ));
+          String imgURL = query.data['ImageURL'];
+          return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => InfoPage(
+                            campusName: campusName,
+                            siteName: siteName,
+                          )),
+                );
+              },
+              child: Padding(
+                  padding: EdgeInsets.only(top: 5.0),
+                  child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                          constraints: BoxConstraints(
+                            maxHeight: 70,
+                            maxWidth: screenWidth * .75,
+                          ),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              boxShadow: <BoxShadow>[
+                                BoxShadow(
+                                    blurRadius: 20,
+                                    offset: Offset.zero,
+                                    color: Colors.grey.withOpacity(0.5))
+                              ]),
+                          //color: Colors.white,
+                          child: Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10),
+                                width: 50,
+                                height: 50,
+                                child: ClipOval(
+                                  child: Image.network(
+                                    imgURL,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                  child: Container(
+                                      child: Column(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 10.0),
+                                    child: Text(
+                                      '$siteName',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 0.0),
+                                    child: Text('$community'),
+                                  ),
+                                ],
+                              ))),
+                              Align(
+                                alignment: Alignment.center,
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_forward),
+                                  color: Colors.blue,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => InfoPage(
+                                                campusName: campusName,
+                                                siteName: siteName,
+                                              )),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          )))));
         });
+  }
+
+  Widget _showSiteList() {
+    return null;
   }
 } //class
