@@ -54,7 +54,7 @@ class InfoPage extends StatelessWidget {
     List<Widget> buttons = [];
     for (var rm in roomTypes) {
       buttons.add(new RaisedButton(
-        child: Text('$rm Room'),
+        child: Text('$rm'),
         onPressed: () {},
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ));
