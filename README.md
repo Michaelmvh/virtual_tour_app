@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This app is meant to make college campuses more accessible for people due to covid19, out of state students, or students with disabilities. Through this project I learned about: the dart programming language, Flutter, UI layouts, asynchronous programming, and noSQL databases.
+This app is meant to make information about college campuses more accessible for prospective students due to covid19, out of state students, or students with disabilities. Through this project I became familiar with Dart, Flutter, UI layouts, asynchronous programming, and noSQL databases.
 
 ## Overview
 
